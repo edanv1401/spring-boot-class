@@ -11,10 +11,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 import com.villarraga.gil.programacion.dto.UserDto;
 import com.villarraga.gil.programacion.services.user.IUserService;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class UserController {
@@ -31,18 +32,18 @@ public class UserController {
     }
 
     @PostMapping("/sign-in")
-    public ResponseEntity<Void> signPage(@ModelAttribute UserDto user, Model model) {
+    public ResponseEntity<Void> signPage(@ModelAttribute UserDto user, Model model, HttpSession session) {
         UserDto userLogin = service.singIn(user);
-        String url = userLogin  == null ? "login": "index";
+        session.setAttribute("user-agent", userLogin);
+        String url = userLogin == null ? "login" : "index";
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Role-Auth", userLogin.getRole().getId().toString());
         headers.setLocation(URI.create(url));
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 
     @GetMapping("/index")
-    public String indexPage(@RequestHeader(value="Role-Auth") String roleAgent, Model model) {
-        model.addAttribute("role", roleAgent);
-        return "index";
+    public String indexPage(Model model, HttpSession session) {
+        UserDto user = (UserDto) session.getAttribute("user-agent");
+        return (user == null) ? "login" : "index";
     }
 }

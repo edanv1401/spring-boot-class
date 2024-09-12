@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.villarraga.gil.programacion.dto.UserDto;
+import com.villarraga.gil.programacion.entities.User;
 import com.villarraga.gil.programacion.repositories.IUserRepository;
 
 @Service
@@ -19,11 +20,13 @@ public class UserServiceImpl implements IUserService{
 
     @Override
     public UserDto singIn(UserDto user) {
-        return mapper.convertValue(
-            repository
-            .findByUsernameAndPassword(user.getUsername(), user.getPassword())
-            .orElse(null), 
-        UserDto.class);
-    }
-    
+        User u = repository
+        .findByUsernameAndPassword(user.getUsername(), user.getPassword())
+        .orElse(null);
+        return UserDto.builder()
+        .id(u.getId())
+        .role(u.getRole())
+        .username(u.getUsername())
+        .build();
+    } 
 }
